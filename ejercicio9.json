@@ -1,0 +1,197 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "path": "3a6a3819-2e69-4f61-a79b-a77ef06fd59d",
+        "formTitle": "Movies",
+        "formDescription": "Consulta en la API",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Id movie",
+              "fieldType": "number",
+              "placeholder": "Ingrese un ID"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "581123c7-b2ff-47d4-a544-eb311d67ab8f",
+      "name": "Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2,
+      "position": [
+        -1968,
+        -688
+      ],
+      "webhookId": "3a6a3819-2e69-4f61-a79b-a77ef06fd59d"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json['Id movie'] }}",
+              "rightValue": 20,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0cd1dbea-9993-4f97-96c1-b49c2a4cd917",
+      "name": "Validar ID",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1712,
+        -688
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "5a8308a6-85ba-4929-ba65-a99117836ccb",
+      "name": "Error ID",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -1472,
+        -576
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://devsapihub.com/api-movies/{{ $json['Id movie'] }}",
+        "options": {}
+      },
+      "id": "e4040e15-f220-4838-944a-f495c9d13e67",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -1472,
+        -800
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json['error'] }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "isNotEmpty"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9c6c1a95-3401-4d6d-950c-27d0fd987c8f",
+      "name": "Detectar Error API",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1232,
+        -800
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "f5311274-b5ff-430e-a862-3748762322da",
+      "name": "Error API",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -1040,
+        -880
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "d5726fd8-d4b9-4501-a176-10dff31b1335",
+      "name": "Datos OK",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -1040,
+        -720
+      ]
+    }
+  ],
+  "connections": {
+    "Form": {
+      "main": [
+        [
+          {
+            "node": "Validar ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar ID": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Detectar Error API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detectar Error API": {
+      "main": [
+        [
+          {
+            "node": "Error API",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Datos OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fddb7eb1f9d8ab3fabc315e1f703eabdba49242dd1c2e33a3a1a31d80dd61528"
+  }
+}
