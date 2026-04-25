@@ -1,0 +1,258 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://geocoding-api.open-meteo.com/v1/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "={{ $json.Ciudad }}"
+            },
+            {
+              "name": "count",
+              "value": "1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "94898321-1749-4038-b87e-2789db77c2d6",
+      "name": "Buscar Coordenadas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -736,
+        -304
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.open-meteo.com/v1/forecast",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "latitude",
+              "value": "={{ $json.results[0].latitude }}"
+            },
+            {
+              "name": "longitude",
+              "value": "={{ $json.results[0].longitude }}"
+            },
+            {
+              "name": "current_weather",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9ee9dd9e-f852-4b31-b8f8-a7517fab8b09",
+      "name": "Consultar Clima",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -544,
+        -304
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "Clima_humano",
+              "stringValue": "=={{ ({  0: 'Despejado',  1: 'Principalmente despejado',  2: 'Parcialmente nublado',  3: 'Nublado',  45: 'Niebla',  61: 'Lluvia ligera',  63: 'Lluvia moderada',  80: 'Chubascos'})[$json.current_weather.weathercode] || 'Otro' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "04e628f5-27a8-47d0-a3c3-22900f04310a",
+      "name": "Editar Clima",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -336,
+        -304
+      ]
+    },
+    {
+      "parameters": {
+        "path": "881b104d-acce-4834-9bc1-dc59d8beefab",
+        "formTitle": "Asistente del clima",
+        "formDescription": "Consulta el clima y guarda resultados",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Nombre",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Ciudad",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "834725b4-ca7f-4a97-82a6-8ae8e66838d4",
+      "name": "On form submission1",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2,
+      "position": [
+        -928,
+        -304
+      ],
+      "webhookId": "881b104d-acce-4834-9bc1-dc59d8beefab"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "=1nGBGKTmz5VEhDbjRMdOF1rMn47hdOsjamsm2OtgnEWM",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1nGBGKTmz5VEhDbjRMdOF1rMn47hdOsjamsm2OtgnEWM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Nombre": "={{ $('On form submission1').item.json.Nombre }}",
+            "Ciudad": "={{ $('On form submission1').item.json.Ciudad }}",
+            "Temperatura": "={{$('Consultar Clima').item.json.current_weather.temperature}}",
+            "Clima": "={{$json.Clima_humano}}",
+            "Fecha": "={{$now.toFormat('yyyy-MM-dd HH:mm')}}"
+          },
+          "matchingColumns": [
+            "Ciudad"
+          ],
+          "schema": [
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nombre",
+              "displayName": "Nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Ciudad",
+              "displayName": "Ciudad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Temperatura",
+              "displayName": "Temperatura",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Clima",
+              "displayName": "Clima",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -144,
+        -304
+      ],
+      "id": "1d54e332-fb33-453f-ab75-0f1f30e3a813",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "dAckTbhGJj5Yvgzn",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Buscar Coordenadas": {
+      "main": [
+        [
+          {
+            "node": "Consultar Clima",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Clima": {
+      "main": [
+        [
+          {
+            "node": "Editar Clima",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Editar Clima": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission1": {
+      "main": [
+        [
+          {
+            "node": "Buscar Coordenadas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fddb7eb1f9d8ab3fabc315e1f703eabdba49242dd1c2e33a3a1a31d80dd61528"
+  }
+}
