@@ -1,0 +1,251 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "path": "ad02de2f-776a-40a7-97fc-226000eb0dd6",
+        "formTitle": "Consulta de Clima",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Ciudad",
+              "placeholder": "Ej: Bogotá",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "01c5d626-7372-4560-82a1-8392b3c7e886",
+      "name": "Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2,
+      "position": [
+        -3024,
+        -704
+      ],
+      "webhookId": "ad02de2f-776a-40a7-97fc-226000eb0dd6"
+    },
+    {
+      "parameters": {
+        "url": "https://geocoding-api.open-meteo.com/v1/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "={{ $json.Ciudad }}"
+            },
+            {
+              "name": "count",
+              "value": "1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7b774be4-ea30-4667-a60c-f6b88b21047d",
+      "name": "Geocoding",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -2768,
+        -704
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.open-meteo.com/v1/forecast",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "latitude",
+              "value": "={{ $json.results[0].latitude }}"
+            },
+            {
+              "name": "longitude",
+              "value": "={{ $json.results[0].longitude }}"
+            },
+            {
+              "name": "current_weather",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ed458966-97dd-4758-b71d-362eb4041d9e",
+      "name": "Clima",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -2512,
+        -704
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.error }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "isNotEmpty"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "074c4161-3eb1-40c9-b68e-a815d12a0915",
+      "name": "Detectar Error",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -2272,
+        -704
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "b55938be-caec-4ee3-9cbb-9db81ba34f1f",
+      "name": "Error API",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -2016,
+        -848
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.current_weather.temperature }}",
+              "rightValue": 28,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5d9ba4cc-7ec3-4bb3-abfc-a2ab2325603f",
+      "name": "Evaluar Temperatura",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -2016,
+        -592
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "a5852e03-9831-47bf-8eb7-c6e409b4bdfa",
+      "name": "Calor",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -1760,
+        -704
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "d4b17a2f-8a76-40c6-ba83-8e67b0f3b06f",
+      "name": "Normal",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -1760,
+        -496
+      ]
+    }
+  ],
+  "connections": {
+    "Form": {
+      "main": [
+        [
+          {
+            "node": "Geocoding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Geocoding": {
+      "main": [
+        [
+          {
+            "node": "Clima",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clima": {
+      "main": [
+        [
+          {
+            "node": "Detectar Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detectar Error": {
+      "main": [
+        [
+          {
+            "node": "Error API",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Evaluar Temperatura",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluar Temperatura": {
+      "main": [
+        [
+          {
+            "node": "Calor",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Normal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fddb7eb1f9d8ab3fabc315e1f703eabdba49242dd1c2e33a3a1a31d80dd61528"
+  }
+}
